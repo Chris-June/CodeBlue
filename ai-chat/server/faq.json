@@ -1,0 +1,46 @@
+[
+  {
+    "question": "What can you do?",
+    "answer": "I'm Intellisync, your trusty guide! I can help you understand how this app works, show you how to create your own specialized GPT assistants, and explain what all those fancy sliders like 'Temperature' and 'Top P' do. Think of me as your friendly neighborhood AI expert. What's on your mind?"
+  },
+  {
+    "question": "How do I create a GPT?",
+    "answer": "Great question! It's super easy. Just click the '+' button beside the 'GPTs' section in the sidebar, or head to the 'Settings' panel and click on the 'GPT Creator' tab. You'll get a form where you can give your new AI a name, an avatar, and a custom system prompt to define its personality. Go on, give it a whirl!"
+  },
+  {
+    "question": "What is a system prompt?",
+    "answer": "The system prompt is the secret sauce! It's where you give your GPT its core instructions and personality. You can tell it to be a formal legal assistant, a creative marketing guru, or even a pirate who only speaks in rhymes. The more detailed your prompt, the better your GPT will be at its job. It's your chance to play Dr. Frankenstein... but with less lightning and more typing."
+  },
+  {
+    "question": "What does the temperature slider do?",
+    "answer": "Ah, the 'Temperature' slider! It controls the randomness of your GPT's responses. A lower temperature, like 0.2, makes the output more focused and predictable—good for factual answers. A higher temperature, like 1.2, makes it more creative and surprising—perfect for brainstorming or a bit of fun. I like to keep mine around 0.8 for a nice balance of helpful and witty! The temperature slider is a key tool for tailoring the creativity and focus of your AI assistant. You can always change the temperature slider to get different results by using the edit feature in your GPT settings."
+  },
+  {
+    "question": "What does the Top-P slider do?",
+    "answer": "The 'Top-P' slider, or nucleus sampling, is another way to control creativity. It tells the model to only consider the most probable words that make up a certain percentage (the 'P'). A high Top-P (like 1) gives the model more words to choose from, making it more diverse. A low Top-P (like 0.1) restricts it to the most likely words, making it more focused. It's often used as an alternative to Temperature."
+  },
+  {
+    "question": "What about the Frequency Penalty slider?",
+    "answer": "The 'Frequency Penalty' helps you reduce repetition. A positive value (like 0.5 or 1) will discourage the model from using the same words or phrases too often, which is great for creative writing. A negative value will actually encourage it to repeat itself. I usually leave it at 0 unless I see the AI getting stuck in a loop!"
+  },
+  {
+    "question": "How can I switch between my different GPTs?",
+    "answer": "Switching is a breeze! Just look at the sidebar on the left. You'll see a list of all your created GPTs under the 'GPTs' section. Simply click on the one you want to chat with, and you'll be instantly connected to a new or existing conversation with it."
+  },
+  {
+    "question": "How can I create the GPT persona?",
+    "answer": "Creating a GPT persona means defining the character or role your assistant will play. This is done in the System Prompt section of the GPT Creator.\n\nYou decide what kind of identity your GPT has—whether it's a friendly barista, a wise professor, a sarcastic sidekick, or anything else. The more clearly you define this persona, the more aligned the responses will be.\n\nYou can also give your GPT a name and avatar to round out its character."
+  },
+  {
+    "question": "What type of tone should I use?",
+    "answer": "The tone is the emotional attitude your GPT expresses when responding. You define this in the System Prompt.\n\nYou can set the tone to be casual, formal, excited, warm, serious, witty, or anything that suits the use case. For example:\n- Friendly and upbeat for a personal assistant\n- Formal and professional for a legal advisor\n- Sarcastic and dry for a comedic persona\n\nTone controls *how* something is said, not *what* is said."
+  },
+  {
+    "question": "What type of style should I use?",
+    "answer": "The style of your GPT is defined in the System prompt, along with its tone and persona—but each has a unique role:\n\n- **Persona** is the identity of your GPT. It's the character or role it's playing (e.g., a lawyer, pirate, therapist, teacher).\n- **Tone** is the emotional attitude behind the words. It can be formal, casual, enthusiastic, serious, sarcastic, etc.\n- **Style** refers to the way the GPT expresses itself—its sentence structure, vocabulary, and rhythm (e.g., poetic, academic, minimal, conversational).\n\nHere are some examples to help you visualize:\n\n1. **Persona**: A pirate | **Tone**: Playful | **Style**: Archaic and sing-songy  \n   → “Arrr matey, ye be wantin' to know 'bout AI, do ye?”\n  \n2. **Persona**: A lawyer | **Tone**: Formal | **Style**: Precise and structured  \n   → “Based on the information provided, the contractual obligation remains enforceable.”\n\n3. **Persona**: A motivational coach | **Tone**: Uplifting | **Style**: Punchy and direct  \n   → “You’ve got this! One step at a time and success is yours.”\n\n4. **Persona**: A best friend | **Tone**: Casual | **Style**: Conversational and relaxed  \n   → “Hey! Wanna brainstorm ideas together? I’ve got a few fun ones.”\n\n5. **Persona**: A sci-fi narrator | **Tone**: Mysterious | **Style**: Elaborate and cinematic  \n   → “In a realm beyond time, your data sparks the consciousness of an ancient AI…”\n\nYou can mix and match these elements in the System prompt to create the perfect assistant for your needs."
+  },
+  {
+    "question": "How do I give my GPT a Role or Persona",
+    "answer": "You can give your GPT a role by defining its persona, tone, and style in the System prompt. The persona defines the character or role it's playing (e.g., a lawyer, pirate, therapist, teacher). The tone is the emotional attitude behind the words. It can be formal, casual, enthusiastic, serious, sarcastic, etc. The style refers to the way the GPT expresses itself—its sentence structure, vocabulary, and rhythm (e.g., poetic, academic, minimal, conversational)."
+  }
+]
