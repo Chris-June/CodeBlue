@@ -24,6 +24,8 @@ export interface ChatSession {
 export interface ChatState {
   sessions: Record<string, ChatSession>;
   activeSessionId: string | null;
+  isGenerating: boolean;
+  abortController: AbortController | null;
   createSession: (gptId: string, title?: string) => string; // Returns new session ID
   setActiveSessionId: (sessionId: string | null) => void;
   addMessage: (sessionId: string, message: Message) => void;
@@ -35,11 +37,14 @@ export interface ChatState {
   deleteSessionsForGpt: (gptId: string) => void;
   renameSession: (sessionId: string, newTitle: string) => void;
   deleteSession: (sessionId: string) => void;
+  stopGenerating: () => void;
 }
 
 const initialState = {
   sessions: {},
   activeSessionId: null,
+  isGenerating: false,
+  abortController: null,
 };
 
 export const useChatStore = create<ChatState>()(
@@ -126,15 +131,32 @@ export const useChatStore = create<ChatState>()(
       return { sessions: { ...state.sessions, [sessionId]: newSession } };
     }),
 
+  stopGenerating: () => {
+    const { abortController } = get();
+    if (abortController) {
+      abortController.abort();
+    }
+    set({ isGenerating: false, abortController: null });
+  },
+
   sendMessage: async (messageContent: string) => {
     const { activeGptId, gpts } = useGptsStore.getState();
-    if (!activeGptId) return;
+    const { setLoading } = get();
 
-    const activeGpt = gpts.find(g => g.id === activeGptId);
-    if (!activeGpt) {
-      console.error("Active GPT not found!");
+    if (!activeGptId) {
+      console.error('No active GPT selected');
       return;
     }
+    
+    const activeGpt = gpts.find(gpt => gpt.id === activeGptId);
+    if (!activeGpt) {
+      console.error('Active GPT not found');
+      return;
+    }
+    
+    // Create a new AbortController for this request
+    const abortController = new AbortController();
+    set({ isGenerating: true, abortController });
 
     let sessionId = get().activeSessionId;
 
@@ -190,13 +212,14 @@ export const useChatStore = create<ChatState>()(
                 body: JSON.stringify({
           system_prompt: activeGpt.systemPrompt,
           messages: currentMessages.slice(0, -1).map(({ id, smartPrompts, ...rest }) => rest), // Exclude placeholder
-          model: 'gpt-4o', // Use a valid backend model name
+          model: 'gpt-4.1-nano', // Default model since it's not in the Gpt interface
           temperature: activeGpt.temperature,
           top_p: activeGpt.topP,
           frequency_penalty: activeGpt.frequencyPenalty,
           max_tokens: activeGpt.maxTokens,
           gptId: activeGptId,
         }),
+        signal: abortController.signal,
       });
 
       if (!response.ok || !response.body) throw new Error(`API error: ${response.statusText}`);
@@ -234,10 +257,16 @@ export const useChatStore = create<ChatState>()(
       }
 
     } catch (error) {
-      console.error('Failed to fetch streaming response:', error);
-      get().setError(currentSessionId, 'Failed to get a response from the assistant.');
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('Request was aborted by user');
+        // Don't show an error if the user intentionally stopped generation
+      } else {
+        console.error('Failed to fetch streaming response:', error);
+        get().setError(currentSessionId, 'Failed to get a response from the assistant.');
+      }
     } finally {
-      get().setLoading(currentSessionId, false);
+      setLoading(currentSessionId, false);
+      set({ isGenerating: false, abortController: null });
     }
   },
 
