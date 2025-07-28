@@ -100,7 +100,7 @@ const ChatShell: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10"
+              className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10"
             >
               <div className="bg-primary/90 text-primary-foreground px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
                 <span>Now chatting with</span>
