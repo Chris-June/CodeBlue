@@ -64,12 +64,12 @@ app.post('/api/chat', async (req, res) => {
 
       try {
         const intentCompletion = await apiClient.chat.completions.create({
-          model: 'gpt-4o-mini', // Use a fast model for classification
+          model: 'gpt-4.1-nano', // Use a fast model for classification
           messages: [
             { role: 'system', content: intentSystemPrompt },
             { role: 'user', content: intentUserPrompt },
           ],
-          temperature: 0,
+          temperature: .8,
           max_tokens: 50,
         });
 
@@ -145,7 +145,7 @@ app.post('/api/chat', async (req, res) => {
           { role: 'system', content: smartPromptSystem },
           { role: 'user', content: smartPromptUser },
         ],
-        temperature: 0.6,
+        temperature: 0.8,
         max_tokens: 200,
         response_format: { type: 'json_object' },
       });

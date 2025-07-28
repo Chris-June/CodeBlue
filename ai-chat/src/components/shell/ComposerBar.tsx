@@ -1,7 +1,11 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useChatStore } from '@/stores/chatStore';
 import { useGptsStore } from '@/stores/gptsStore';
+import { useUiStore } from '@/stores/uiStore';
+import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Globe } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import MarkdownToolbar from '../chat/MarkdownToolbar';
 import CharacterCount from '../chat/composer/CharacterCount';
 import ComposerActions from '../chat/composer/ComposerActions';
@@ -14,6 +18,7 @@ const ComposerBar: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { activeGptId, gpts } = useGptsStore();
+  const { isWebSearchEnabled, toggleWebSearch } = useUiStore();
   const { sendMessage, isGenerating, stopGenerating } = useChatStore();
   const activeGpt = gpts.find(g => g.id === activeGptId);
 
@@ -96,6 +101,32 @@ const ComposerBar: React.FC = () => {
       />
       <form onSubmit={handleSubmit} className="p-3">
         <div className="relative rounded-lg border-2 border-input focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+          <div className="absolute bottom-2 left-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      'h-8 w-8',
+                      isWebSearchEnabled
+                        ? 'text-green-500 hover:text-green-600'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                    onClick={toggleWebSearch}
+                    aria-label="Toggle web search"
+                  >
+                    <Globe className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{isWebSearchEnabled ? 'Disable' : 'Enable'} Web Search</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <Textarea
             ref={inputRef}
             value={inputValue}
@@ -104,7 +135,7 @@ const ComposerBar: React.FC = () => {
             placeholder={`Chat with ${activeGpt?.name || 'your GPT'}...`}
             className={cn(
               'w-full resize-none border-0 bg-transparent shadow-sm',
-              'min-h-[60px] p-3 pr-28',
+              'min-h-[60px] p-3 pl-12 pr-28',
               'focus-visible:ring-0 focus-visible:ring-offset-0'
             )}
             maxLength={MAX_MESSAGE_LENGTH}

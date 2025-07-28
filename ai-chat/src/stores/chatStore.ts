@@ -3,12 +3,23 @@ import { persist } from 'zustand/middleware';
 
 import { useGptsStore } from './gptsStore';
 import { useUserStore } from './userStore';
+import { useUiStore } from './uiStore';
+
+export interface UrlCitation {
+  type: 'url_citation';
+  text: string; // The cited text snippet, e.g., "[1]"
+  start_index: number;
+  end_index: number;
+  url: string;
+  title: string;
+}
 
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   smartPrompts?: string[];
+  annotations?: UrlCitation[];
 }
 
 export interface ChatSession {
@@ -33,6 +44,7 @@ export interface ChatState {
   deleteMessage: (sessionId: string, messageId: string) => void;
   appendToLastMessage: (sessionId: string, chunk: string) => void;
   addSmartPrompts: (sessionId: string, prompts: string[]) => void;
+  addAnnotations: (sessionId: string, annotations: any[]) => void;
   setError: (sessionId: string, error: string | null) => void;
   setLoading: (sessionId: string, isLoading: boolean) => void;
   sendMessage: (messageContent: string) => Promise<void>;
@@ -111,6 +123,21 @@ export const useChatStore = create<ChatState>()(
       if (lastMessage.role !== 'assistant') return {};
 
       const updatedLastMessage = { ...lastMessage, smartPrompts: prompts };
+      const updatedMessages = [...session.messages.slice(0, -1), updatedLastMessage];
+      const newSession = { ...session, messages: updatedMessages };
+
+      return { sessions: { ...state.sessions, [sessionId]: newSession } };
+    }),
+
+  addAnnotations: (sessionId, annotations) =>
+    set(state => {
+      const session = state.sessions[sessionId];
+      if (!session || session.messages.length === 0) return {};
+
+      const lastMessage = session.messages[session.messages.length - 1];
+      if (lastMessage.role !== 'assistant') return {};
+
+      const updatedLastMessage = { ...lastMessage, annotations: annotations };
       const updatedMessages = [...session.messages.slice(0, -1), updatedLastMessage];
       const newSession = { ...session, messages: updatedMessages };
 
@@ -206,21 +233,27 @@ export const useChatStore = create<ChatState>()(
       const headers: HeadersInit = { 'Content-Type': 'application/json' };
       if (apiKey) headers['X-User-API-Key'] = apiKey;
 
+      const { isWebSearchEnabled } = useUiStore.getState();
+      const tools = isWebSearchEnabled ? [{ type: 'web_search_preview' }] : [];
+
       const currentMessages = get().sessions[currentSessionId].messages;
+
+      const body = JSON.stringify({
+        model: activeGpt.model || 'gpt-4o',
+        messages: currentMessages.slice(0, -1).map(({ id, smartPrompts, ...rest }) => rest), // Exclude placeholder
+        system_prompt: activeGpt.systemPrompt,
+        temperature: activeGpt.temperature,
+        top_p: activeGpt.topP,
+        frequency_penalty: activeGpt.frequencyPenalty,
+        max_tokens: activeGpt.maxTokens,
+        gptId: activeGptId,
+        ...(tools.length > 0 && { tools }),
+      });
 
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers,
-                body: JSON.stringify({
-          system_prompt: activeGpt.systemPrompt,
-          messages: currentMessages.slice(0, -1).map(({ id, smartPrompts, ...rest }) => rest), // Exclude placeholder
-          model: 'gpt-4.1-nano', // Default model since it's not in the Gpt interface
-          temperature: activeGpt.temperature,
-          top_p: activeGpt.topP,
-          frequency_penalty: activeGpt.frequencyPenalty,
-          max_tokens: activeGpt.maxTokens,
-          gptId: activeGptId,
-        }),
+        body,
         signal: abortController.signal,
       });
 
@@ -229,39 +262,60 @@ export const useChatStore = create<ChatState>()(
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
-      const delimiter = '||SMART_PROMPTS||';
-      let promptsFound = false;
+      const annotationsDelimiter = '||ANNOTATIONS||';
+      const promptsDelimiter = '||SMART_PROMPTS||';
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
-
-        if (!promptsFound) {
-          const delimiterIndex = buffer.indexOf(delimiter);
-          if (delimiterIndex !== -1) {
-            get().appendToLastMessage(currentSessionId, buffer.substring(0, delimiterIndex));
-            buffer = buffer.substring(delimiterIndex + delimiter.length);
-            promptsFound = true;
-          } else {
-            get().appendToLastMessage(currentSessionId, buffer);
-            buffer = '';
-          }
-        }
       }
 
-      if (promptsFound && buffer.length > 0) {
+      let mainContent = buffer;
+      let annotationsJson = '';
+      let promptsJson = '';
+
+      // Use split for robust parsing, regardless of order.
+      const promptsParts = mainContent.split(promptsDelimiter);
+      if (promptsParts.length > 1) {
+        mainContent = promptsParts[0];
+        promptsJson = promptsParts[1];
+      }
+
+      const annotationsParts = mainContent.split(annotationsDelimiter);
+      if (annotationsParts.length > 1) {
+        mainContent = annotationsParts[0];
+        annotationsJson = annotationsParts[1];
+      }
+
+      set(state => {
+        const session = state.sessions[currentSessionId];
+        if (!session || session.messages.length === 0) return {};
+        const lastMessage = session.messages[session.messages.length - 1];
+        const updatedLastMessage = { ...lastMessage, content: mainContent };
+        const updatedMessages = [...session.messages.slice(0, -1), updatedLastMessage];
+        return {
+          sessions: { 
+            ...state.sessions, 
+            [currentSessionId]: { ...session, messages: updatedMessages }
+          }
+        };
+      });
+
+      if (annotationsJson) {
         try {
-          get().addSmartPrompts(currentSessionId, JSON.parse(buffer));
+          get().addAnnotations(currentSessionId, JSON.parse(annotationsJson));
+        } catch (e) { console.error('Failed to parse annotations JSON:', e); }
+      }
+      if (promptsJson) {
+        try {
+          get().addSmartPrompts(currentSessionId, JSON.parse(promptsJson));
         } catch (e) { console.error('Failed to parse smart prompts JSON:', e); }
-      } else if (buffer.length > 0) {
-        get().appendToLastMessage(currentSessionId, buffer);
       }
 
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
         console.log('Request was aborted by user');
-        // Don't show an error if the user intentionally stopped generation
       } else {
         console.error('Failed to fetch streaming response:', error);
         get().setError(currentSessionId, 'Failed to get a response from the assistant.');

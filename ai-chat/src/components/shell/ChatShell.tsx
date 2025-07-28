@@ -90,19 +90,19 @@ const ChatShell: React.FC = () => {
       </div>
 
       {/* Message Area */}
-      <div className="relative flex-1 min-h-0">
+      <div className="relative h-full flex-1 flex flex-col overflow-hidden">
         <MessageList />
         
         {/* Notification when switching models */}
         <AnimatePresence>
           {showSwitchNotification && activeGpt && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
+            <motion.div 
+              initial={{ opacity: 0, y: -40 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10"
+              exit={{ opacity: 0, y: -40 }}
+              className="absolute top-4 left-0 right-0 flex justify-center z-10"
             >
-              <div className="bg-primary/90 text-primary-foreground px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+              <div className="bg-background border rounded-full px-4 py-1.5 text-sm shadow-lg flex items-center gap-2">
                 <span>Now chatting with</span>
                 <span className="font-semibold">{activeGpt.name}</span>
                 <span className="text-xs opacity-80">

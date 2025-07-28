@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -43,6 +44,7 @@ const GptCreatorForm: React.FC<GptCreatorFormProps> = ({ onFinished }) => {
   const [frequencyPenalty, setFrequencyPenalty] = useState([0]);
     const [maxTokens, setMaxTokens] = useState([1024]);
   const [model, setModel] = useState('gpt-4o');
+  const [enableWebSearch, setEnableWebSearch] = useState(false);
 
   useEffect(() => {
     if (isEditMode && gptToEdit) {
@@ -54,6 +56,7 @@ const GptCreatorForm: React.FC<GptCreatorFormProps> = ({ onFinished }) => {
       setFrequencyPenalty([gptToEdit.frequencyPenalty]);
             setMaxTokens([gptToEdit.maxTokens]);
       setModel(gptToEdit.model || 'gpt-4o');
+      setEnableWebSearch(gptToEdit.enableWebSearch || false);
     }
   }, [isEditMode, gptToEdit]);
 
@@ -74,6 +77,7 @@ const GptCreatorForm: React.FC<GptCreatorFormProps> = ({ onFinished }) => {
       frequencyPenalty: frequencyPenalty[0],
             maxTokens: maxTokens[0],
       model: model,
+      enableWebSearch: enableWebSearch,
     };
 
     if (isEditMode && gptId) {
@@ -160,6 +164,22 @@ const GptCreatorForm: React.FC<GptCreatorFormProps> = ({ onFinished }) => {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="web-search" className="text-right">
+              Web Search
+            </Label>
+            <div className="col-span-3 flex items-center space-x-2">
+              <Switch
+                id="web-search"
+                checked={enableWebSearch}
+                onCheckedChange={setEnableWebSearch}
+              />
+              <Label htmlFor="web-search" className="text-sm font-normal text-muted-foreground">
+                Allow the model to search the web for the latest information.
+              </Label>
+            </div>
           </div>
 
           <div className="grid grid-cols-4 items-start gap-4">

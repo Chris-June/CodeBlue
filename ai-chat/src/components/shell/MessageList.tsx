@@ -18,6 +18,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Welcome from './Welcome';
 import SmartPrompts from '../chat/SmartPrompts';
+import Citation from '@/components/chat/Citation';
+import type { UrlCitation } from '@/stores/chatStore';
 
 interface MessageItemProps {
   message: Message;
@@ -27,6 +29,40 @@ interface MessageItemProps {
   onEdit: (id: string, content: string) => void;
   onDelete: (id: string) => void;
 }
+
+const parseCitations = (content: string, annotations: UrlCitation[] | undefined): React.ReactNode[] => {
+  if (!annotations || annotations.length === 0) {
+    return [content];
+  }
+
+  let lastIndex = 0;
+  const nodes: React.ReactNode[] = [];
+
+  annotations.forEach((citation, i) => {
+    const placeholder = citation.text;
+    const placeholderIndex = content.indexOf(placeholder, lastIndex);
+
+    if (placeholderIndex > -1) {
+      // Add text before the citation
+      if (placeholderIndex > lastIndex) {
+        nodes.push(content.substring(lastIndex, placeholderIndex));
+      }
+      // Add the citation component
+      nodes.push(<Citation key={`citation-${i}`} citation={citation} index={i} />);
+      lastIndex = placeholderIndex + placeholder.length;
+    } else {
+      // Fallback if placeholder isn't found, though it should be.
+      console.warn(`Citation placeholder "${placeholder}" not found.`);
+    }
+  });
+
+  // Add any remaining text after the last citation
+  if (lastIndex < content.length) {
+    nodes.push(content.substring(lastIndex));
+  }
+
+  return nodes;
+};
 
 const MessageItem: React.FC<MessageItemProps> = ({ message, isUser, gptAvatar, userAvatar, onEdit, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -78,12 +114,25 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isUser, gptAvatar, u
       )}
     >
       <Avatar className="w-8 h-8 flex-shrink-0 flex items-center justify-center">
-        {((isUser && userAvatar) || (!isUser && gptAvatar && gptAvatar.startsWith('http'))) ? (
-          <AvatarImage src={isUser ? userAvatar : gptAvatar} />
+        {isUser ? (
+          <>
+            {userAvatar ? (
+              <AvatarImage src={userAvatar} alt="User" />
+            ) : (
+              <AvatarFallback>{'You'}</AvatarFallback>
+            )}
+          </>
         ) : (
-          <span className="text-lg">{isUser ? userAvatar : gptAvatar}</span>
+          <>
+            {gptAvatar && gptAvatar.startsWith('http') ? (
+              <AvatarImage src={gptAvatar} alt="GPT" />
+            ) : (
+              <AvatarFallback className="bg-transparent text-2xl p-0">
+                {gptAvatar || '🤖'}
+              </AvatarFallback>
+            )}
+          </>
         )}
-        <AvatarFallback>{isUser ? 'You' : gptAvatar?.charAt(0) || 'A'}</AvatarFallback>
       </Avatar>
       
       <div className={cn(
@@ -119,13 +168,18 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isUser, gptAvatar, u
             "prose prose-sm max-w-none break-words",
             !isUser && "dark:prose-invert"
           )}>
-            <ReactMarkdown
-              rehypePlugins={[rehypeRaw, rehypeHighlight]}
-              components={{
-                a: ({ ...props }) => (
-                  <a {...props} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline" />
-                ),
-                code({ node, className, children, ...props }) {
+            {message.annotations && message.annotations.length > 0 ? (
+              <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none break-words">
+                {parseCitations(message.content, message.annotations)}
+              </div>
+            ) : (
+              <ReactMarkdown
+                rehypePlugins={[rehypeRaw, rehypeHighlight]}
+                components={{
+                  a: ({ ...props }) => (
+                    <a {...props} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline" />
+                  ),
+                  code({ node, className, children, ...props }) {
                     const match = /language-(\w+)/.exec(className || '');
                     return match ? (
                       <div className="relative">
@@ -138,11 +192,12 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isUser, gptAvatar, u
                         {children}
                       </code>
                     );
-                },
-              }}
-            >
-              {message.content}
-            </ReactMarkdown>
+                  },
+                }}
+              >
+                {message.content}
+              </ReactMarkdown>
+            )}
           </div>
         )}
       </div>

@@ -11,6 +11,7 @@ export interface Gpt {
   temperature: number;
   topP: number;
   frequencyPenalty: number;
+
   maxTokens: number;
   model?: string; // Optional model identifier (e.g., 'gpt-4o')
 }

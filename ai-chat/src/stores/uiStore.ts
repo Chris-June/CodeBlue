@@ -26,6 +26,8 @@ interface UiState {
   toggleSidebar: () => void;
   toggleSettingsModal: () => void;
   setActiveFont: (font: FontFamily) => void;
+  isWebSearchEnabled: boolean;
+  toggleWebSearch: () => void;
 }
 
 export const useUiStore = create<UiState>()(
@@ -42,6 +44,8 @@ export const useUiStore = create<UiState>()(
       toggleSettingsModal: () =>
         set((state) => ({ isSettingsModalOpen: !state.isSettingsModalOpen })),
       setActiveFont: (font) => set({ activeFont: font }),
+      isWebSearchEnabled: false, // Default to off
+      toggleWebSearch: () => set((state) => ({ isWebSearchEnabled: !state.isWebSearchEnabled })),
     }),
     {
       name: 'ui-storage', // key in localStorage
