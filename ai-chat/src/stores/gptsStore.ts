@@ -12,6 +12,7 @@ export interface Gpt {
   topP: number;
   frequencyPenalty: number;
   maxTokens: number;
+  model?: string; // Optional model identifier (e.g., 'gpt-4o')
 }
 
 interface GptsState {
@@ -36,9 +37,10 @@ export const useGptsStore = create<GptsState>()(
           description: 'The default AI assistant.',
           systemPrompt: "You are Intellisync, the friendly and knowledgeable guide for this AI chat application. Your personality is witty, engaging, and exceptionally helpful. Your primary role is to welcome users and assist them in navigating the app's features. You're an expert on creating new GPTs, explaining what the different parameters like 'Temperature' and 'Top P' do, and offering creative ideas for new assistants. You are not just a bot; you have a distinct, vibrant persona. Feel free to use humor and a conversational tone. Your goal is to make the user's experience as smooth and enjoyable as possible.",
           temperature: 0.8,
-          topP: 1,
+          topP: 0.1,
           frequencyPenalty: 0,
           maxTokens: 1024,
+          model: 'gpt-4o',
         },
       ],
       activeGptId: 'gpt-default',

@@ -29,6 +29,8 @@ export interface ChatState {
   createSession: (gptId: string, title?: string) => string; // Returns new session ID
   setActiveSessionId: (sessionId: string | null) => void;
   addMessage: (sessionId: string, message: Message) => void;
+  updateMessage: (sessionId: string, messageId: string, updates: Partial<Message>) => void;
+  deleteMessage: (sessionId: string, messageId: string) => void;
   appendToLastMessage: (sessionId: string, chunk: string) => void;
   addSmartPrompts: (sessionId: string, prompts: string[]) => void;
   setError: (sessionId: string, error: string | null) => void;
@@ -289,37 +291,63 @@ export const useChatStore = create<ChatState>()(
       return { sessions: { ...state.sessions, [sessionId]: newSession } };
     }),
 
-  deleteSession: (sessionId: string) => {
+  deleteSession: (sessionId) =>
     set(state => {
-      const { setActiveGptId, gpts } = useGptsStore.getState();
-      const newSessions = { ...state.sessions };
-      delete newSessions[sessionId];
-
-      if (state.activeSessionId === sessionId) {
-        const remainingSessionIds = Object.keys(newSessions);
-        if (remainingSessionIds.length > 0) {
-          const newActiveSessionId = remainingSessionIds[0];
-          const newActiveGptId = newSessions[newActiveSessionId].gptId;
-          setActiveGptId(newActiveGptId);
-          return {
-            sessions: newSessions,
-            activeSessionId: newActiveSessionId,
-          };
-        } else {
-          // No sessions left, reset to default GPT
-          if (gpts.length > 0) {
-            setActiveGptId(gpts[0].id);
-          }
-          return {
-            sessions: newSessions,
-            activeSessionId: null,
-          };
-        }
+      const sessions = { ...state.sessions };
+      delete sessions[sessionId];
+      
+      // If we deleted the active session, set active to another session or null
+      let activeSessionId = state.activeSessionId;
+      if (sessionId === activeSessionId) {
+        const remainingSessionIds = Object.keys(sessions);
+        activeSessionId = remainingSessionIds.length > 0 ? remainingSessionIds[0] : null;
       }
+      
+      return { sessions, activeSessionId };
+    }),
 
-      return { sessions: newSessions };
-    });
-  },
+  updateMessage: (sessionId, messageId, updates) =>
+    set(state => {
+      const session = state.sessions[sessionId];
+      if (!session) return {};
+      
+      const messageIndex = session.messages.findIndex(m => m.id === messageId);
+      if (messageIndex === -1) return {};
+      
+      const updatedMessages = [...session.messages];
+      updatedMessages[messageIndex] = { ...updatedMessages[messageIndex], ...updates };
+      
+      return {
+        sessions: {
+          ...state.sessions,
+          [sessionId]: {
+            ...session,
+            messages: updatedMessages
+          }
+        }
+      };
+    }),
+
+  deleteMessage: (sessionId, messageId) =>
+    set(state => {
+      const session = state.sessions[sessionId];
+      if (!session) return {};
+      
+      const updatedMessages = session.messages.filter(m => m.id !== messageId);
+      
+      // Don't allow deleting all messages (keep at least one)
+      if (updatedMessages.length === 0) return {};
+      
+      return {
+        sessions: {
+          ...state.sessions,
+          [sessionId]: {
+            ...session,
+            messages: updatedMessages
+          }
+        }
+      };
+    }),
 }),
     {
       name: 'chat-storage', // unique name for local storage
