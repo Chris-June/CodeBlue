@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Welcome from './Welcome';
+import SmartPrompts from '../chat/SmartPrompts';
 
 interface MessageItemProps {
   message: Message;
@@ -76,8 +77,12 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isUser, gptAvatar, u
         isUser ? 'flex-row-reverse' : 'flex-row'
       )}
     >
-      <Avatar className="w-8 h-8 flex-shrink-0">
-        <AvatarImage src={isUser ? userAvatar : gptAvatar} />
+      <Avatar className="w-8 h-8 flex-shrink-0 flex items-center justify-center">
+        {((isUser && userAvatar) || (!isUser && gptAvatar && gptAvatar.startsWith('http'))) ? (
+          <AvatarImage src={isUser ? userAvatar : gptAvatar} />
+        ) : (
+          <span className="text-lg">{isUser ? userAvatar : gptAvatar}</span>
+        )}
         <AvatarFallback>{isUser ? 'You' : gptAvatar?.charAt(0) || 'A'}</AvatarFallback>
       </Avatar>
       
@@ -110,7 +115,10 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isUser, gptAvatar, u
             </div>
           </div>
         ) : (
-          <div className="prose prose-sm dark:prose-invert max-w-none break-words">
+          <div className={cn(
+            "prose prose-sm max-w-none break-words",
+            !isUser && "dark:prose-invert"
+          )}>
             <ReactMarkdown
               rehypePlugins={[rehypeRaw, rehypeHighlight]}
               components={{
@@ -172,7 +180,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isUser, gptAvatar, u
 };
 
 const MessageList: React.FC = () => {
-  const { sessions, activeSessionId, updateMessage, deleteMessage } = useChatStore();
+  const { sessions, activeSessionId, updateMessage, deleteMessage, isGenerating } = useChatStore();
   const { gpts, activeGptId } = useGptsStore();
   const { avatar } = useUserStore();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -209,17 +217,24 @@ const MessageList: React.FC = () => {
                 <Welcome />
             ) : (
                 <div className="flex flex-col">
-                {messages.map((message) => (
-                    <MessageItem
-                        key={message.id}
+                  {messages.map((message, index) => (
+                    <div key={message.id}>
+                      <MessageItem
                         message={message}
                         isUser={message.role === 'user'}
                         gptAvatar={activeGpt?.avatar}
                         userAvatar={avatar || undefined}
                         onEdit={handleEditMessage}
                         onDelete={handleDeleteMessage}
-                    />
-                ))}
+                      />
+                      {message.role === 'assistant' &&
+                        message.smartPrompts &&
+                        index === messages.length - 1 &&
+                        !isGenerating && (
+                          <SmartPrompts prompts={message.smartPrompts} />
+                      )}
+                    </div>
+                  ))}
                 </div>
             )}
         </div>
