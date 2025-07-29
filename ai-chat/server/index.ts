@@ -40,7 +40,9 @@ app.post('/api/chat', async (req, res) => {
   const apiClient = userApiKey ? new OpenAI({ apiKey: userApiKey }) : openai;
 
   try {
+    console.log('Received request body:', JSON.stringify(req.body, null, 2));
     const { messages, model, temperature, top_p, frequency_penalty, max_tokens, gptId, system_prompt } = req.body;
+    console.log('System prompt from request:', system_prompt ? system_prompt.substring(0, 100) + '...' : 'No system prompt');
 
     if (!messages) {
       return res.status(400).send('Messages are required');

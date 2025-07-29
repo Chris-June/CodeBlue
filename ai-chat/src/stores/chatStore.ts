@@ -183,6 +183,10 @@ export const useChatStore = create<ChatState>()(
       if (apiKey) headers['X-User-API-Key'] = apiKey;
 
       const currentMessages = get().sessions[currentSessionId].messages;
+      
+      // Debug logging
+      console.log('Active GPT object:', activeGpt);
+      console.log('System prompt being sent:', activeGpt.systemPrompt);
 
       const response = await fetch('/api/chat', {
         method: 'POST',
