@@ -18,6 +18,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Welcome from './Welcome';
 import SmartPrompts from '../chat/SmartPrompts';
+import TypingIndicator from './TypingIndicator';
 import Citation from '@/components/chat/Citation';
 import type { UrlCitation } from '@/stores/chatStore';
 
@@ -235,7 +236,7 @@ const MessageItem: React.FC<MessageItemProps> = ({ message, isUser, gptAvatar, u
 };
 
 const MessageList: React.FC = () => {
-  const { sessions, activeSessionId, updateMessage, deleteMessage, isGenerating } = useChatStore();
+  const { sessions, activeSessionId, updateMessage, deleteMessage } = useChatStore();
   const { gpts, activeGptId } = useGptsStore();
   const { avatar } = useUserStore();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -268,7 +269,7 @@ const MessageList: React.FC = () => {
           'px-4 py-2',
           messages.length === 0 && 'h-full flex items-center justify-center'
         )}>
-            {messages.length === 0 ? (
+            {!activeSession ? (
                 <Welcome />
             ) : (
                 <div className="flex flex-col">
@@ -285,11 +286,33 @@ const MessageList: React.FC = () => {
                       {message.role === 'assistant' &&
                         message.smartPrompts &&
                         index === messages.length - 1 &&
-                        !isGenerating && (
+                        !activeSession?.isLoading && (
                           <SmartPrompts prompts={message.smartPrompts} />
                       )}
                     </div>
                   ))}
+                  {(() => {
+                    const lastMessage = messages[messages.length - 1];
+                    const showTypingIndicator = activeSession?.isLoading && lastMessage?.role === 'assistant' && lastMessage.content === '';
+
+                    if (showTypingIndicator) {
+                      return (
+                        <div className="flex items-start gap-3 py-3 text-sm flex-row">
+                          <Avatar className="w-8 h-8 flex-shrink-0 flex items-center justify-center">
+                            {activeGpt?.avatar ? (
+                              <AvatarImage src={activeGpt.avatar} alt={activeGpt.name} />
+                            ) : (
+                              <AvatarFallback>AI</AvatarFallback>
+                            )}
+                          </Avatar>
+                          <div className="relative flex items-center rounded-xl px-4 py-2 bg-muted h-10">
+                            <TypingIndicator />
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
             )}
         </div>

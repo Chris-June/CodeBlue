@@ -7,8 +7,9 @@ import path from 'path';
 
 dotenv.config();
 
-const app = express();
-const port = process.env.PORT || 3001;
+async function main() {
+  const app = express();
+  const port = process.env.PORT || 3001;
 
 interface FaqItem {
   question: string;
@@ -135,6 +136,10 @@ app.post('/api/chat', async (req, res) => {
       });
       const summary = summaryCompletion.choices[0]?.message?.content || '';
 
+      if (!messages || messages.length === 0) {
+        // Cannot generate prompts without context, so we exit gracefully.
+        return;
+      }
       const lastUserMessage = messages[messages.length - 1].content;
       const smartPromptSystem = `You are an expert at identifying engaging follow-up questions. Based on the following context, generate 4 brief, relevant questions the user might want to ask next. Return them as a JSON array of strings: ["question1", "question2", "question3", "question4"].`;
       const smartPromptUser = `Conversation summary: "${summary}"\n\nUser's last message: "${lastUserMessage}"\n\nAssistant's response: "${fullResponse.substring(0, 200)}..."`;
@@ -173,6 +178,9 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server is listening on port ${port}`);
-});
+  app.listen(port, () => {
+    console.log(`Server is listening on port ${port}`);
+  });
+}
+
+main();

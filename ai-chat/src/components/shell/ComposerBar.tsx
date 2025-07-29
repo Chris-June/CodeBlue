@@ -122,7 +122,7 @@ const ComposerBar: React.FC = () => {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{isWebSearchEnabled ? 'Disable' : 'Enable'} Web Search</p>
+                  <p>{isWebSearchEnabled ? '' : ''} Web Search coming soon</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

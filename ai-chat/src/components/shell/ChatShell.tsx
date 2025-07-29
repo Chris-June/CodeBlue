@@ -7,7 +7,6 @@ import { useGptsStore } from '@/stores/gptsStore';
 import { useChatStore } from '@/stores/chatStore';
 import MessageList from './MessageList';
 import ComposerBar from './ComposerBar';
-import TypingIndicator from './TypingIndicator';
 import ModelInfo from '../chat/ModelInfo';
 import { cn } from '@/lib/utils';
 
@@ -115,7 +114,6 @@ const ChatShell: React.FC = () => {
       </div>
       
       {/* Composer Area */}
-      <TypingIndicator />
       <ComposerBar />
     </div>
     </>
