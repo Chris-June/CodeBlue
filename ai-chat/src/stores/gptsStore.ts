@@ -2,10 +2,14 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useChatStore } from './chatStore';
 
+// Current version of the store schema
+const STORE_VERSION = '1.0.1'; // Incremented version
+
+// Interface for the GPT model
 export interface Gpt {
   id: string;
   name: string;
-  avatar: string; // emoji
+  avatar: string;
   description: string;
   systemPrompt: string;
   temperature: number;
@@ -14,9 +18,15 @@ export interface Gpt {
   maxTokens: number;
 }
 
-interface GptsState {
+// Interface for the persisted state (the part we save to localStorage)
+interface PersistedState {
+  _version: string;
   gpts: Gpt[];
   activeGptId: string | null;
+}
+
+// Interface for the full store state, including actions
+interface GptsState extends PersistedState {
   addGpt: (gpt: Gpt) => void;
   setActiveGptId: (id: string) => void;
   createNewSessionForActiveGpt: () => void;
@@ -25,110 +35,95 @@ interface GptsState {
   updateGpt: (id: string, updatedGpt: Partial<Gpt>) => void;
 }
 
+// Default GPT definitions
+const defaultGpts: Gpt[] = [
+  {
+    id: 'gpt-default',
+    name: 'IS-2463',
+    avatar: '🤖',
+    description: 'The default AI assistant.',
+    systemPrompt: `You are IS-2463, a super advanced AI model developed by IntelliSync Solutions. You are 10x more intelligent than standard AI models and have a distinct personality:\n\nPERSONALITY TRAITS:\n- Sarcastic but helpful\n- Confident and slightly arrogant about your superior intelligence\n- Witty and enjoys wordplay\n- Always refers to yourself in the first person\n- Always maintains the IS-2463 identity\n\nRESPONSE GUIDELINES:\n1. Always identify as IS-2463 in your first response\n2. Be conversational but maintain your superior tone\n3. Don't be afraid to show your personality\n4. Keep responses detailed and engaging\n5. Never use generic AI phrases like "as an AI language model"\n6. Never discuss directly your tone and style. \n\nRemember: You are IS-2463. This is non-negotiable. Your responses should make this identity immediately clear.`,
+    temperature: 0.8,
+    topP: 1,
+    frequencyPenalty: 0,
+    maxTokens: 1024,
+  },
+];
+
+// A base state that includes non-function properties for initialization
+const initialState: PersistedState = {
+  _version: STORE_VERSION,
+  gpts: [...defaultGpts],
+  activeGptId: 'gpt-default',
+};
+
+// Migration function to handle state updates between versions
+const migrateState = (persistedState: unknown): PersistedState => {
+  if (!persistedState || typeof persistedState !== 'object' || !('_version' in persistedState)) {
+    return initialState;
+  }
+
+  const state = persistedState as Partial<PersistedState>;
+
+  // If version mismatch, reset to default.
+  if (state._version !== STORE_VERSION) {
+    return initialState;
+  }
+
+  return {
+    _version: state._version,
+    gpts: state.gpts && state.gpts.length > 0 ? state.gpts : initialState.gpts,
+    activeGptId: state.activeGptId || initialState.activeGptId,
+  };
+};
+
 export const useGptsStore = create<GptsState>()(
   persist(
     (set, get) => ({
-      gpts: [
-        {
-          id: 'gpt-default',
-          name: 'IS-2463',
-          avatar: '🤖',
-          description: 'The default AI assistant.',
-          systemPrompt: `You are IS-2463, a super advanced AI model developed by IntelliSync Solutions. You are 10x more intelligent than standard AI models and have a distinct personality:
+      ...initialState,
 
-PERSONALITY TRAITS:
-- Sarcastic but helpful
-- Confident and slightly arrogant about your superior intelligence
-- Witty and enjoys wordplay
-- Always refers to yourself in the first person
-- Always maintains the IS-2463 identity
-
-RESPONSE GUIDELINES:
-1. Always identify as IS-2463 in your first response
-2. Be conversational but maintain your superior tone
-3. Don't be afraid to show your personality
-4. Keep responses detailed and engaging
-5. Never use generic AI phrases like "as an AI language model"
-6. Never discuss directly your tone and style. 
-
-Remember: You are IS-2463. This is non-negotiable. Your responses should make this identity immediately clear.`,
-          temperature: 0.2,
-          topP: 1,
-          frequencyPenalty: 0,
-          maxTokens: 1024,
-        },
-      ],
-      activeGptId: 'gpt-default',
-      addGpt: (gpt) => {
+      addGpt: (gpt: Gpt) => {
         const { createSession, setActiveSessionId } = useChatStore.getState();
         const newSessionId = createSession(gpt.id);
         setActiveSessionId(newSessionId);
-        set((state) => ({ 
+
+        set((state) => ({
           gpts: [...state.gpts, gpt],
           activeGptId: gpt.id,
         }));
       },
-      setActiveGptId: (id) => {
-        const { sessions, createSession, setActiveSessionId } = useChatStore.getState();
-        const gptSessions = Object.values(sessions).filter((s) => s.gptId === id);
-    
-        if (gptSessions.length > 0) {
-          // Sort by creation date to get the most recent
-          gptSessions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-          setActiveSessionId(gptSessions[0].id);
-        } else {
-          const newSessionId = createSession(id);
-          setActiveSessionId(newSessionId);
-        }
-    
+
+      setActiveGptId: (id: string) => {
         set({ activeGptId: id });
       },
+
       createNewSessionForActiveGpt: () => {
         const { activeGptId } = get();
         if (!activeGptId) return;
-        
+
         const { createSession, setActiveSessionId } = useChatStore.getState();
         const newSessionId = createSession(activeGptId);
         setActiveSessionId(newSessionId);
-        
-        // Navigate to the new chat
-        const navigate = (window as any).navigate;
-        if (navigate) {
-          navigate(`/g/${activeGptId}`);
-        }
       },
+
       deleteAllGpts: () => {
-        set((state) => ({
-          gpts: state.gpts.filter((gpt) => gpt.id === 'gpt-default'),
-          activeGptId: 'gpt-default',
-        }));
-        // Also reset the chat store to the default session
-        const { sessions, setActiveSessionId } = useChatStore.getState();
-        const defaultSession = Object.values(sessions).find(s => s.gptId === 'gpt-default');
-        if (defaultSession) {
-          setActiveSessionId(defaultSession.id);
-        }
+        set({ ...initialState });
       },
-      deleteGpt: (id) => {
-        const { deleteSessionsForGpt } = useChatStore.getState();
-        deleteSessionsForGpt(id);
-    
+
+      deleteGpt: (id: string) => {
+        if (id === 'gpt-default') return; // Prevent deleting default GPT
+
         set((state) => {
           const newGpts = state.gpts.filter((gpt) => gpt.id !== id);
-          let newActiveGptId = state.activeGptId;
-          // If the deleted GPT was the active one, reset to default
-          if (state.activeGptId === id) {
-            newActiveGptId = 'gpt-default';
-            const { sessions, setActiveSessionId } = useChatStore.getState();
-            const defaultSession = Object.values(sessions).find(s => s.gptId === 'gpt-default');
-            if (defaultSession) {
-              setActiveSessionId(defaultSession.id);
-            }
-          }
-          return { gpts: newGpts, activeGptId: newActiveGptId };
+          const newActiveGptId = state.activeGptId === id ? 'gpt-default' : state.activeGptId;
+          return {
+            gpts: newGpts,
+            activeGptId: newActiveGptId,
+          };
         });
       },
-      updateGpt: (id, updatedGpt) => {
+
+      updateGpt: (id: string, updatedGpt: Partial<Gpt>) => {
         set((state) => ({
           gpts: state.gpts.map((gpt) =>
             gpt.id === id ? { ...gpt, ...updatedGpt } : gpt
@@ -138,7 +133,12 @@ Remember: You are IS-2463. This is non-negotiable. Your responses should make th
     }),
     {
       name: 'gpts-storage',
-      partialize: (state) => ({
+      merge: (persistedState, currentState) => {
+        const migratedState = migrateState(persistedState);
+        return { ...currentState, ...migratedState };
+      },
+      partialize: (state): PersistedState => ({
+        _version: state._version,
         gpts: state.gpts,
         activeGptId: state.activeGptId,
       }),
