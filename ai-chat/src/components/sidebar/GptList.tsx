@@ -11,7 +11,7 @@ interface GptListProps {
 }
 
 const GptList: React.FC<GptListProps> = ({ isSidebarOpen }) => {
-  const { gpts, activeGptId, setActiveGptId, createNewSessionForActiveGpt, deleteGpt } = useGptsStore();
+  const { gpts, activeGptId, setActiveGptId, deleteGpt } = useGptsStore();
   const navigate = useNavigate();
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -81,24 +81,10 @@ const GptList: React.FC<GptListProps> = ({ isSidebarOpen }) => {
     <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-foreground">GPTs</h3>
-        <div className="flex items-center gap-1">
-          <Button variant="outline" size="sm" onClick={createNewSessionForActiveGpt}>
-            New Chat
-          </Button>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={() => navigate('/g/new')} className="h-8 w-8">
-                  <Plus className="h-4 w-4" />
-                  <span className="sr-only">New GPT</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                <p>New GPT</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
+        <Button variant="outline" size="sm" onClick={() => navigate('/g/new')}>
+          <Plus className="h-4 w-4 mr-2" />
+          New GPT
+        </Button>
       </div>
       <div className="flex flex-col gap-2">
         {gpts.length === 0 ? (

@@ -1,7 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useChatStore } from '@/stores/chatStore';
 import type { Message } from '@/stores/chatStore';
-import { Button } from '@/components/ui/button';
 import { useGptsStore } from '@/stores/gptsStore';
 import { useUserStore } from '@/stores/userStore';
 import { cn } from '@/lib/utils';
@@ -10,6 +9,7 @@ import rehypeRaw from 'rehype-raw';
 import rehypeHighlight from 'rehype-highlight';
 import Welcome from './Welcome';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Lightbulb } from 'lucide-react';
 
 const MessageList: React.FC = () => {
   const { sessions, activeSessionId, sendMessage } = useChatStore();
@@ -60,9 +60,7 @@ const MessageList: React.FC = () => {
               <div
                 className={cn(
                   'p-3 rounded-xl inline-block',
-                  message.role === 'user'
-                    ? 'bg-zinc-800 text-white'
-                    : 'bg-muted'
+                  message.role === 'user' && 'bg-intellisync-blue text-white'
                 )}
               >
                 <article
@@ -81,19 +79,20 @@ const MessageList: React.FC = () => {
                 </article>
               </div>
               {message.role === 'assistant' && message.smartPrompts && message.smartPrompts.length > 0 && (
-                <div className="mt-4 text-left">
-                  <p className="text-sm font-semibold mb-2">Want to dive deeper?</p>
-                  <div className="flex flex-wrap gap-2">
+                <div className="mt-6 text-left">
+                  <p className="text-sm font-semibold mb-3">Want to dive deeper?</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {message.smartPrompts.map((prompt, index) => (
-                      <Button
+                      <button
                         key={index}
-                        variant="outline"
-                        size="sm"
                         onClick={() => sendMessage(prompt)}
-                        className="text-xs h-auto py-1 px-2"
+                        className="group flex items-start gap-3 text-left p-3 rounded-lg border border-border bg-muted/20 hover:bg-muted/50 transition-colors duration-200"
                       >
-                        {prompt}
-                      </Button>
+                        <Lightbulb className="h-4 w-4 mt-1 text-muted-foreground flex-shrink-0" />
+                        <span className="text-sm text-foreground">
+                          {prompt}
+                        </span>
+                      </button>
                     ))}
                   </div>
                 </div>

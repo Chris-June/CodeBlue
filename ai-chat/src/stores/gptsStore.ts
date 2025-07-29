@@ -21,7 +21,7 @@ interface GptsState {
   setActiveGptId: (id: string) => void;
   createNewSessionForActiveGpt: () => void;
   deleteAllGpts: () => void;
-    deleteGpt: (id: string) => void;
+  deleteGpt: (id: string) => void;
   updateGpt: (id: string, updatedGpt: Partial<Gpt>) => void;
 }
 

@@ -15,7 +15,7 @@ const Sidebar: React.FC = () => {
     <motion.aside
       animate={{ width: isSidebarOpen ? 256 : 64 }}
       initial={false}
-            className="bg-background flex flex-col relative border-r"
+            className="flex flex-col relative border-r"
     >
       <Button
         onClick={toggleSidebar}

@@ -25,6 +25,9 @@ module.exports = {
         mono: ['"Source Code Pro"', ...defaultTheme.fontFamily.mono],
       },
       colors: {
+        'intellisync-blue': '#4A4AFF',
+        'brand-dark-blue': '#1C2A4D',
+        'brand-light-blue': '#3E60C5',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -73,6 +76,9 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: 0 },
         },
+      },
+      backgroundImage: {
+        'brand-gradient': 'linear-gradient(135deg, var(--tw-gradient-from), var(--tw-gradient-to))',
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
