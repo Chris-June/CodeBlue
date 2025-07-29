@@ -81,8 +81,13 @@ const HistoryList: React.FC<HistoryListProps> = ({ isSidebarOpen }) => {
   return (
     <div className="flex flex-col gap-4 mt-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-foreground">History</h3>
-        <Button variant="outline" size="sm" onClick={createNewSessionForActiveGpt}>
+        <h3 className="text-lg font-semibold text-sidebar-foreground/90">History</h3>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="bg-sidebar-accent/90 text-sidebar-foreground hover:bg-sidebar-accent border-sidebar-accent/50 hover:text-sidebar-foreground"
+          onClick={createNewSessionForActiveGpt}
+        >
           New Chat
         </Button>
       </div>

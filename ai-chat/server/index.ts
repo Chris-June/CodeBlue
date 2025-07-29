@@ -99,25 +99,43 @@ app.post('/api/chat', async (req, res) => {
 
     // If it wasn't an FAQ match (or for any other GPT), call the main OpenAI API
     if (!isFaqMatch) {
-      const apiMessages = [...messages];
-      if (system_prompt) {
-        apiMessages.unshift({ role: 'system', content: system_prompt });
-      }
+      // Prepare the messages array, including the system prompt if provided
+      const messagesWithSystem = system_prompt 
+        ? [{ role: 'system', content: system_prompt }, ...messages]
+        : messages;
 
-      const stream = await apiClient.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: apiMessages,
+      // Ensure we're using the correct model and apply the system prompt
+      const completionOptions: OpenAI.ChatCompletionCreateParams = {
+        model: 'gpt-4o', // Force using gpt-4o
+        messages: messagesWithSystem.map(m => ({
+          role: m.role as 'system' | 'user' | 'assistant',
+          content: m.content
+        })),
+        temperature: temperature ?? 0.7,
+        top_p: top_p ?? 0.9,
+        frequency_penalty: frequency_penalty ?? 0,
+        max_tokens: max_tokens ?? 1024,
         stream: true,
-        temperature,
-        top_p,
-        frequency_penalty,
-        max_tokens,
+      };
+      
+      console.log('Sending to OpenAI with options:', {
+        ...completionOptions,
+        messages: completionOptions.messages.map(m => ({
+          ...m,
+          content: typeof m.content === 'string' 
+            ? (m.content.length > 100 ? m.content.substring(0, 100) + '...' : m.content)
+            : '[non-string content]'
+        }))
       });
+
+      const stream = await apiClient.chat.completions.create(completionOptions);
 
       for await (const chunk of stream) {
         const content = chunk.choices[0]?.delta?.content || '';
-        fullResponse += content;
-        res.write(content);
+        if (content) {
+          fullResponse += content;
+          res.write(content);
+        }
       }
     }
 

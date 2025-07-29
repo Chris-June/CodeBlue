@@ -80,8 +80,13 @@ const GptList: React.FC<GptListProps> = ({ isSidebarOpen }) => {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-foreground">GPTs</h3>
-        <Button variant="outline" size="sm" onClick={() => navigate('/g/new')}>
+        <h3 className="text-lg font-semibold text-sidebar-foreground/90">GPTs</h3>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="bg-sidebar-accent/90 text-sidebar-foreground hover:bg-sidebar-accent border-sidebar-accent/50 hover:text-sidebar-foreground" 
+          onClick={() => navigate('/g/new')}
+        >
           <Plus className="h-4 w-4 mr-2" />
           New GPT
         </Button>

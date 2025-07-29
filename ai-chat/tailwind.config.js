@@ -26,8 +26,15 @@ module.exports = {
       },
       colors: {
         'intellisync-blue': '#4A4AFF',
-        'brand-dark-blue': '#1C2A4D',
+        'brand-dark-blue': '#0f172a', // Updated to match the sidebar
         'brand-light-blue': '#3E60C5',
+        'sidebar': {
+          DEFAULT: 'hsl(var(--sidebar))',
+          foreground: 'hsl(var(--sidebar-foreground))',
+          muted: 'hsl(var(--sidebar-muted))',
+          accent: 'hsl(var(--sidebar-accent))',
+          border: 'hsl(var(--sidebar-border))',
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

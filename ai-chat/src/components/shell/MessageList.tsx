@@ -42,7 +42,7 @@ const MessageList: React.FC = () => {
             )}
           >
             {message.role === 'assistant' && (
-              <span className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-semibold">
+              <span className="w-20 h-20 flex items-center justify-center font-semibold text-xl">
                 {activeGpt?.avatar || '🤖'}
               </span>
             )}
@@ -99,9 +99,9 @@ const MessageList: React.FC = () => {
               )}
             </div>
             {message.role === 'user' && (
-                            <Avatar className="w-8 h-8">
+              <Avatar className="w-20 h-20">
                 <AvatarImage src={avatar || undefined} />
-                <AvatarFallback>Me</AvatarFallback>
+                <AvatarFallback className="text-base">Me</AvatarFallback>
               </Avatar>
             )}
           </div>
