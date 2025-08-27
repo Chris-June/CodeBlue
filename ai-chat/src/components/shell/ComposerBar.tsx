@@ -7,6 +7,7 @@ import { Send } from 'lucide-react';
 
 const ComposerBar: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { activeGptId } = useGptsStore();
   const { sendMessage } = useChatStore();
@@ -33,20 +34,31 @@ const ComposerBar: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-start gap-2 p-4 border-t">
-      <Textarea
-        ref={inputRef}
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        placeholder="Type your message here..."
-        className="flex-1 resize-none"
-        rows={1}
-        onKeyDown={handleKeyDown}
-      />
-      <Button type="submit" size="icon" disabled={!inputValue.trim() || !activeGptId}>
-        <Send className="h-4 w-4" />
-      </Button>
-    </form>
+    <div className={`p-4 ${isFocused ? 'pb-2' : 'pb-4'} transition-all duration-300`}>
+      <form 
+        onSubmit={handleSubmit} 
+        className={`flex items-start gap-4 p-2 bg-white/85 rounded-2xl shadow-xl transition-all duration-300 ring-2 ${isFocused ? 'ring-intellisync-blue' : 'ring-transparent'}`}>
+        <Textarea
+          ref={inputRef}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholder="Type your message here..."
+          className="flex-1 resize-none bg-transparent text-slate-900 placeholder:text-slate-500 focus:outline-none ring-0 border-0 focus:ring-0 focus:border-0 p-2"
+          rows={1}
+          onKeyDown={handleKeyDown}
+        />
+        <Button 
+          type="submit" 
+          size="icon" 
+          disabled={!inputValue.trim() || !activeGptId}
+          className="bg-intellisync-blue hover:bg-intellisync-blue/90 text-white rounded-lg transition-all duration-300 disabled:bg-slate-300 disabled:text-slate-500"
+        >
+          <Send className="h-4 w-4" />
+        </Button>
+      </form>
+    </div>
   );
 };
 

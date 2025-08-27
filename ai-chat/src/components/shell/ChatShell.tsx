@@ -5,7 +5,7 @@ import TypingIndicator from './TypingIndicator';
 
 const ChatShell: React.FC = () => {
   return (
-    <div className="flex flex-col h-full bg-background text-foreground">
+    <div className="flex flex-col h-full text-foreground">
       <MessageList />
       <TypingIndicator />
       <ComposerBar />
