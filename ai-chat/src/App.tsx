@@ -1,11 +1,16 @@
+/*
+  App.tsx
+  -------
+  Application root: initializes theme + font classes, and renders routes within
+  the reusable AppShell layout for a cohesive UI structure.
+*/
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Sidebar from './components/sidebar/Sidebar';
 import ChatPage from './pages/ChatPage';
 import GptCreatorPage from './pages/GptCreatorPage';
 import NotFoundPage from './pages/NotFoundPage';
-import SettingsModal from './components/settings/SettingsModal';
 import { useUiStore } from './stores/uiStore';
 import { useEffect } from 'react';
+import AppShell from './components/shell/AppShell';
 
 function App() {
   const { theme, activeFont, fonts } = useUiStore();
@@ -26,19 +31,15 @@ function App() {
 
   return (
     <Router>
-      <div className="flex h-screen bg-gradient-to-br from-brand-dark-blue to-brand-light-blue text-white">
-        <Sidebar />
-        <main className="flex-1">
-          <Routes>
-            <Route path="/" element={<ChatPage />} />
-            <Route path="/g/:gptId" element={<ChatPage />} />
-            <Route path="/g/new" element={<GptCreatorPage />} />
-            <Route path="/g/edit/:gptId" element={<GptCreatorPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </main>
-        <SettingsModal />
-      </div>
+      <AppShell>
+        <Routes>
+          <Route path="/" element={<ChatPage />} />
+          <Route path="/g/:gptId" element={<ChatPage />} />
+          <Route path="/g/new" element={<GptCreatorPage />} />
+          <Route path="/g/edit/:gptId" element={<GptCreatorPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </AppShell>
     </Router>
   );
 }

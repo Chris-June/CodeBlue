@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Plus, Trash2, Pencil } from 'lucide-react';
 import ConfirmationDialog from '../settings/ConfirmationDialog';
+import { DEFAULT_GPT_NAME } from '@/config/branding';
 
 interface GptListProps {
   isSidebarOpen: boolean;
@@ -55,23 +56,25 @@ const GptList: React.FC<GptListProps> = ({ isSidebarOpen }) => {
               <p>New GPT</p>
             </TooltipContent>
           </Tooltip>
-          {gpts.map((gpt: Gpt) => (
+          {gpts.map((gpt: Gpt) => {
+            const displayName = gpt.id === 'gpt-default' ? DEFAULT_GPT_NAME : gpt.name;
+            return (
             <Tooltip key={gpt.id}>
               <TooltipTrigger asChild>
                 <Button
                   variant={activeGptId === gpt.id ? 'secondary' : 'ghost'}
                   size="icon"
                   onClick={() => handleSelectGpt(gpt.id)}
-                  aria-label={gpt.name}
+                  aria-label={displayName}
                 >
                   {gpt.avatar}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">
-                <p>{gpt.name}</p>
+                <p>{displayName}</p>
               </TooltipContent>
             </Tooltip>
-          ))}
+          )})}
         </TooltipProvider>
       </div>
     );
@@ -95,7 +98,9 @@ const GptList: React.FC<GptListProps> = ({ isSidebarOpen }) => {
         {gpts.length === 0 ? (
           <p className="text-sm text-muted-foreground">No GPTs created yet.</p>
         ) : (
-          gpts.map((gpt: Gpt) => (
+          gpts.map((gpt: Gpt) => {
+            const displayName = gpt.id === 'gpt-default' ? DEFAULT_GPT_NAME : gpt.name;
+            return (
             <div key={gpt.id} className="group relative w-full">
               <Button
                 variant={activeGptId === gpt.id ? 'secondary' : 'ghost'}
@@ -104,7 +109,7 @@ const GptList: React.FC<GptListProps> = ({ isSidebarOpen }) => {
               >
                 <div className="flex items-center gap-2 flex-grow">
                   <span className="text-base">{gpt.avatar}</span>
-                  <span className="text-sm font-medium truncate">{gpt.name}</span>
+                  <span className="text-sm font-medium truncate">{displayName}</span>
                 </div>
               </Button>
               {gpt.id !== 'gpt-default' && (
@@ -124,7 +129,7 @@ const GptList: React.FC<GptListProps> = ({ isSidebarOpen }) => {
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent side="top">
-                          <p>Edit {gpt.name}</p>
+                          <p>Edit {displayName}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -142,7 +147,7 @@ const GptList: React.FC<GptListProps> = ({ isSidebarOpen }) => {
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent side="top">
-                          <p>Delete {gpt.name}</p>
+                          <p>Delete {displayName}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -150,7 +155,7 @@ const GptList: React.FC<GptListProps> = ({ isSidebarOpen }) => {
                 </div>
               )}
             </div>
-          ))
+          )})
         )}
       </div>
       {gptToDelete && (

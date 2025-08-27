@@ -5,6 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send } from 'lucide-react';
 
+/**
+ * ComposerBar
+ * Compact message composer with a single-line growing textarea and a send button.
+ * - Vertically centers the send button relative to the input.
+ * - Ensures the send icon remains visible even when the button is disabled.
+ */
 const ComposerBar: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -34,10 +40,10 @@ const ComposerBar: React.FC = () => {
   };
 
   return (
-    <div className={`p-4 ${isFocused ? 'pb-2' : 'pb-4'} transition-all duration-300`}>
+    <div className={`px-3 py-2 ${isFocused ? 'pb-1.5' : 'pb-2.5'} transition-all duration-300`}>
       <form 
         onSubmit={handleSubmit} 
-        className={`flex items-start gap-4 p-2 bg-white/85 rounded-2xl shadow-xl transition-all duration-300 ring-2 ${isFocused ? 'ring-intellisync-blue' : 'ring-transparent'}`}>
+        className={`flex items-center gap-2 p-1.5 bg-white/85 rounded-xl shadow-xl transition-all duration-300 ring-2 ${isFocused ? 'ring-intellisync-blue' : 'ring-transparent'}`}>
         <Textarea
           ref={inputRef}
           value={inputValue}
@@ -45,7 +51,7 @@ const ComposerBar: React.FC = () => {
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder="Type your message here..."
-          className="flex-1 resize-none bg-transparent text-slate-900 placeholder:text-slate-500 focus:outline-none ring-0 border-0 focus:ring-0 focus:border-0 p-2"
+          className="flex-1 resize-none bg-transparent text-slate-900 placeholder:text-slate-500 focus:outline-none ring-0 border-0 focus:ring-0 focus:border-0 p-1 text-sm leading-tight min-h-0"
           rows={1}
           onKeyDown={handleKeyDown}
         />
@@ -53,9 +59,11 @@ const ComposerBar: React.FC = () => {
           type="submit" 
           size="icon" 
           disabled={!inputValue.trim() || !activeGptId}
-          className="bg-intellisync-blue hover:bg-intellisync-blue/90 text-white rounded-lg transition-all duration-300 disabled:bg-slate-300 disabled:text-slate-500"
+          aria-label="Send message"
+          title="Send"
+          className="self-center shrink-0 bg-intellisync-blue hover:bg-intellisync-blue/90 text-white rounded-md transition-all duration-300 disabled:opacity-100 disabled:bg-intellisync-blue/40 disabled:text-white/80 h-8 w-8 p-0"
         >
-          <Send className="h-4 w-4" />
+          <Send className="h-3.5 w-3.5" />
         </Button>
       </form>
     </div>

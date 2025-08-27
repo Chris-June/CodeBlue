@@ -15,18 +15,18 @@ const Sidebar: React.FC = () => {
     <motion.aside
       animate={{ width: isSidebarOpen ? 256 : 64 }}
       initial={false}
-      className="flex flex-col relative border-r border-sidebar-border bg-sidebar text-sidebar-foreground"
+      className="flex h-full flex-col relative border-r border-sidebar-border bg-sidebar text-sidebar-foreground overflow-visible"
     >
+      {/* Sidebar background gradient overlay */}
+      <div className="pointer-events-none absolute inset-0 bg-sidebar-gradient" aria-hidden />
       <Button
         onClick={toggleSidebar}
         className={cn(
-          'absolute top-1/2 -translate-y-1/2 h-6 w-6 rounded-full p-0',
-          isSidebarOpen ? 'left-[244px]' : 'left-[52px]'
+          'absolute top-1/2 right-[-10px] -translate-y-1/2 h-10 w-6 rounded-full p-0 shadow-md z-20',
         )}
-        variant="secondary"
         aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
       >
-        <ChevronLeft className={cn('h-4 w-4 transition-transform', { 'rotate-180': !isSidebarOpen })} />
+        <ChevronLeft className={cn('h-4 w-4 text-white transition-transform', { 'rotate-180': !isSidebarOpen })} />
       </Button>
       <div className="p-4 flex-1 flex flex-col gap-4 overflow-hidden">
                 <h1
