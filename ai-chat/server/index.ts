@@ -7,8 +7,9 @@ import path from 'path';
 
 dotenv.config();
 
-const app = express();
-const port = process.env.PORT || 3001;
+async function main() {
+  const app = express();
+  const port = process.env.PORT || 3001;
 
 interface FaqItem {
   question: string;
@@ -66,12 +67,12 @@ app.post('/api/chat', async (req, res) => {
 
       try {
         const intentCompletion = await apiClient.chat.completions.create({
-          model: 'gpt-4o-mini', // Use a fast model for classification
+          model: 'gpt-4.1-nano', // Use a fast model for classification
           messages: [
             { role: 'system', content: intentSystemPrompt },
             { role: 'user', content: intentUserPrompt },
           ],
-          temperature: 0,
+          temperature: .8,
           max_tokens: 50,
         });
 
@@ -155,6 +156,10 @@ app.post('/api/chat', async (req, res) => {
       });
       const summary = summaryCompletion.choices[0]?.message?.content || '';
 
+      if (!messages || messages.length === 0) {
+        // Cannot generate prompts without context, so we exit gracefully.
+        return;
+      }
       const lastUserMessage = messages[messages.length - 1].content;
       const smartPromptSystem = `You are an expert at identifying engaging follow-up questions. Based on the following context, generate 4 brief, relevant questions the user might want to ask next. Return them as a JSON array of strings: ["question1", "question2", "question3", "question4"].`;
       const smartPromptUser = `Conversation summary: "${summary}"\n\nUser's last message: "${lastUserMessage}"\n\nAssistant's response: "${fullResponse.substring(0, 200)}..."`;
@@ -165,7 +170,7 @@ app.post('/api/chat', async (req, res) => {
           { role: 'system', content: smartPromptSystem },
           { role: 'user', content: smartPromptUser },
         ],
-        temperature: 0.6,
+        temperature: 0.8,
         max_tokens: 200,
         response_format: { type: 'json_object' },
       });
@@ -193,6 +198,9 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server is listening on port ${port}`);
-});
+  app.listen(port, () => {
+    console.log(`Server is listening on port ${port}`);
+  });
+}
+
+main();
