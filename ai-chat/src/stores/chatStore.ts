@@ -183,6 +183,10 @@ export const useChatStore = create<ChatState>()(
       if (apiKey) headers['X-User-API-Key'] = apiKey;
 
       const currentMessages = get().sessions[currentSessionId].messages;
+      
+      // Debug logging
+      console.log('Active GPT object:', activeGpt);
+      console.log('System prompt being sent:', activeGpt.systemPrompt);
 
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -262,30 +266,39 @@ export const useChatStore = create<ChatState>()(
 
   deleteSession: (sessionId: string) => {
     set(state => {
-      const { setActiveGptId, gpts } = useGptsStore.getState();
       const newSessions = { ...state.sessions };
       delete newSessions[sessionId];
-
+      
+      // If we deleted the active session, update the active session ID
       if (state.activeSessionId === sessionId) {
-        const remainingSessionIds = Object.keys(newSessions);
-        if (remainingSessionIds.length > 0) {
-          const newActiveSessionId = remainingSessionIds[0];
-          const newActiveGptId = newSessions[newActiveSessionId].gptId;
-          setActiveGptId(newActiveGptId);
-          return {
-            sessions: newSessions,
-            activeSessionId: newActiveSessionId,
-          };
-        } else {
-          // No sessions left, reset to default GPT
-          if (gpts.length > 0) {
-            setActiveGptId(gpts[0].id);
+        // Find another session to activate, if any exist
+        const remainingSessions = Object.values(newSessions);
+        if (remainingSessions.length > 0) {
+          // Try to find another session for the same GPT
+          const { activeGptId } = useGptsStore.getState();
+          const gptSessions = remainingSessions.filter(s => s.gptId === activeGptId);
+          
+          if (gptSessions.length > 0) {
+            // Sort by creation date to get the most recent
+            gptSessions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            return {
+              sessions: newSessions,
+              activeSessionId: gptSessions[0].id,
+            };
+          } else if (remainingSessions.length > 0) {
+            // If no sessions for current GPT, just pick the first available
+            return {
+              sessions: newSessions,
+              activeSessionId: remainingSessions[0].id,
+            };
           }
-          return {
-            sessions: newSessions,
-            activeSessionId: null,
-          };
         }
+        
+        // If we get here, there are no sessions left
+        return {
+          sessions: newSessions,
+          activeSessionId: null,
+        };
       }
 
       return { sessions: newSessions };

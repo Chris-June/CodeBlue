@@ -15,7 +15,7 @@ const Sidebar: React.FC = () => {
     <motion.aside
       animate={{ width: isSidebarOpen ? 256 : 64 }}
       initial={false}
-            className="bg-background flex flex-col relative border-r"
+      className="flex flex-col relative border-r border-sidebar-border bg-sidebar text-sidebar-foreground"
     >
       <Button
         onClick={toggleSidebar}
@@ -30,10 +30,10 @@ const Sidebar: React.FC = () => {
       </Button>
       <div className="p-4 flex-1 flex flex-col gap-4 overflow-hidden">
                 <h1
-          className={cn('text-2xl font-bold transition-opacity bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent',
+          className={cn('text-2xl font-bold transition-opacity',
             { 'opacity-0': !isSidebarOpen }
           )}>
-          Intelli-Chat
+          IntelliSync
         </h1>
         <div className="flex-1">
           <GptList isSidebarOpen={isSidebarOpen} />

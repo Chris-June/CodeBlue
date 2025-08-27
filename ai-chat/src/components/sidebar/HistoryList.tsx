@@ -15,7 +15,7 @@ interface HistoryListProps {
 
 const HistoryList: React.FC<HistoryListProps> = ({ isSidebarOpen }) => {
   const { sessions, activeSessionId, setActiveSessionId, renameSession, deleteSession } = useChatStore();
-  const { activeGptId } = useGptsStore();
+  const { activeGptId, createNewSessionForActiveGpt } = useGptsStore();
   const navigate = useNavigate();
 
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
@@ -80,7 +80,17 @@ const HistoryList: React.FC<HistoryListProps> = ({ isSidebarOpen }) => {
 
   return (
     <div className="flex flex-col gap-4 mt-4">
-      <h3 className="text-lg font-semibold text-foreground">History</h3>
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold text-sidebar-foreground/90">History</h3>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="bg-sidebar-accent/90 text-sidebar-foreground hover:bg-sidebar-accent border-sidebar-accent/50 hover:text-sidebar-foreground"
+          onClick={createNewSessionForActiveGpt}
+        >
+          New Chat
+        </Button>
+      </div>
       <div className="flex flex-col gap-2">
         {filteredSessions.length === 0 ? (
           <p className="text-sm text-muted-foreground">
