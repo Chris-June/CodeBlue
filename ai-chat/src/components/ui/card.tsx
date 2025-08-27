@@ -2,12 +2,27 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+/**
+ * Card
+ * Tokenized panel container with optional gradient accent variants.
+ * Variants overlay a subtle top-to-bottom tint while preserving `bg-card`.
+ */
+type CardVariant = 'none' | 'blue' | 'amber' | 'purple'
+
+const variantClass: Record<CardVariant, string> = {
+  none: '',
+  blue: 'card-gradient-blue',
+  amber: 'card-gradient-amber',
+  purple: 'card-gradient-purple',
+}
+
+function Card({ className, variant = 'none', ...props }: React.ComponentProps<"div"> & { variant?: CardVariant }) {
   return (
     <div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
+        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm overflow-hidden",
+        variantClass[variant],
         className
       )}
       {...props}

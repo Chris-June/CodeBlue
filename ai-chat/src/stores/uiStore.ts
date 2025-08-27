@@ -31,7 +31,7 @@ interface UiState {
 export const useUiStore = create<UiState>()(
   persist(
     (set) => ({
-      theme: 'light',
+      theme: 'dark',
       isSidebarOpen: true,
       isSettingsModalOpen: false,
       fonts: availableFonts,
@@ -45,6 +45,15 @@ export const useUiStore = create<UiState>()(
     }),
     {
       name: 'ui-storage', // key in localStorage
+      version: 2,
+      migrate: (persistedState: unknown, version: number) => {
+        // Force existing users to dark shell for new design direction
+        if (version < 2 && persistedState && typeof persistedState === 'object') {
+          const state = persistedState as Partial<UiState>;
+          return { ...state, theme: 'dark' } as Partial<UiState>;
+        }
+        return persistedState as UiState;
+      },
     }
   )
 );

@@ -41,7 +41,7 @@ app.post('/api/chat', async (req, res) => {
 
   try {
     console.log('Received request body:', JSON.stringify(req.body, null, 2));
-    const { messages, model, temperature, top_p, frequency_penalty, max_tokens, gptId, system_prompt } = req.body;
+    const { messages, temperature, top_p, frequency_penalty, max_tokens, gptId, system_prompt } = req.body;
     console.log('System prompt from request:', system_prompt ? system_prompt.substring(0, 100) + '...' : 'No system prompt');
 
     if (!messages) {

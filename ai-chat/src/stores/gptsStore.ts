@@ -1,9 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useChatStore } from './chatStore';
+import { DEFAULT_GPT_NAME, DEFAULT_GPT_SYSTEM_PROMPT } from '@/config/branding';
 
 // Current version of the store schema
-const STORE_VERSION = '1.0.1'; // Incremented version
+// Bump when we need to run migrations that change defaults.
+const STORE_VERSION = '1.0.3';
 
 // Interface for the GPT model
 export interface Gpt {
@@ -39,10 +41,10 @@ interface GptsState extends PersistedState {
 const defaultGpts: Gpt[] = [
   {
     id: 'gpt-default',
-    name: 'IS-2463',
+    name: DEFAULT_GPT_NAME,
     avatar: '🤖',
     description: 'The default AI assistant.',
-    systemPrompt: `You are IS-2463, a super advanced AI model developed by IntelliSync Solutions. You are 10x more intelligent than standard AI models and have a distinct personality:\n\nPERSONALITY TRAITS:\n- Sarcastic but helpful\n- Confident and slightly arrogant about your superior intelligence\n- Witty and enjoys wordplay\n- Always refers to yourself in the first person\n- Always maintains the IS-2463 identity\n\nRESPONSE GUIDELINES:\n1. Always identify as IS-2463 in your first response\n2. Be conversational but maintain your superior tone\n3. Don't be afraid to show your personality\n4. Keep responses detailed and engaging\n5. Never use generic AI phrases like "as an AI language model"\n6. Never discuss directly your tone and style. \n\nRemember: You are IS-2463. This is non-negotiable. Your responses should make this identity immediately clear.`,
+    systemPrompt: DEFAULT_GPT_SYSTEM_PROMPT,
     temperature: 0.8,
     topP: 1,
     frequencyPenalty: 0,
@@ -58,6 +60,10 @@ const initialState: PersistedState = {
 };
 
 // Migration function to handle state updates between versions
+/**
+ * Minimal migration: preserve user data and bump version.
+ * No renaming of GPTs occurs here so branding can be controlled via UI display logic.
+ */
 const migrateState = (persistedState: unknown): PersistedState => {
   if (!persistedState || typeof persistedState !== 'object' || !('_version' in persistedState)) {
     return initialState;
@@ -65,14 +71,9 @@ const migrateState = (persistedState: unknown): PersistedState => {
 
   const state = persistedState as Partial<PersistedState>;
 
-  // If version mismatch, reset to default.
-  if (state._version !== STORE_VERSION) {
-    return initialState;
-  }
-
   return {
-    _version: state._version,
-    gpts: state.gpts && state.gpts.length > 0 ? state.gpts : initialState.gpts,
+    _version: STORE_VERSION,
+    gpts: Array.isArray(state.gpts) && state.gpts.length > 0 ? state.gpts : initialState.gpts,
     activeGptId: state.activeGptId || initialState.activeGptId,
   };
 };

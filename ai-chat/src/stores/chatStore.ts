@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import { useGptsStore } from './gptsStore';
+import { DEFAULT_GPT_SYSTEM_PROMPT } from '@/config/branding';
 import { useUserStore } from './userStore';
 
 export interface Message {
@@ -140,7 +141,7 @@ export const useChatStore = create<ChatState>()(
 
     // Step 1: Atomically update state to create session (if needed) and add user message.
     set(state => {
-      let newSessions = { ...state.sessions };
+      const newSessions = { ...state.sessions };
       let newActiveSessionId = state.activeSessionId;
 
       // If no active session or active session is for a different GPT, create a new one.
@@ -186,14 +187,20 @@ export const useChatStore = create<ChatState>()(
       
       // Debug logging
       console.log('Active GPT object:', activeGpt);
-      console.log('System prompt being sent:', activeGpt.systemPrompt);
+      const effectiveSystemPrompt =
+        activeGpt.id === 'gpt-default'
+          ? DEFAULT_GPT_SYSTEM_PROMPT
+          : (activeGpt.systemPrompt || DEFAULT_GPT_SYSTEM_PROMPT);
+      console.log('System prompt being sent:', effectiveSystemPrompt);
 
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers,
                 body: JSON.stringify({
-          system_prompt: activeGpt.systemPrompt,
-          messages: currentMessages.slice(0, -1).map(({ id, smartPrompts, ...rest }) => rest), // Exclude placeholder
+          system_prompt: effectiveSystemPrompt,
+          messages: currentMessages
+            .slice(0, -1)
+            .map(({ role, content }) => ({ role, content })), // exclude placeholder and strip id/smartPrompts
           model: 'gpt-4o', // Use a valid backend model name
           temperature: activeGpt.temperature,
           top_p: activeGpt.topP,
